@@ -3,14 +3,14 @@ import "./App.css";
 
 function App() {
   const [allCharacter, setAllCharacter] = useState([
-    { name: "leonardo", image: "" },
+    { name: "leonardo", image: "" ,species:""},
   ]);
 
   const [listFav, setListFav] = useState(() =>
     JSON.parse(localStorage.getItem("rickAndMorty"))
   );
 
-  function addfav(character) {
+  function addFav(character) {
     setListFav((oldListFav) => {
       localStorage.setItem(
         "rickAndMorty",
@@ -32,18 +32,30 @@ function App() {
     });
   }
 
+ const filterSearch = (specie)=>{
+  const getCharacterList = async () => {
+    const response = await fetch(`https://rickandmortyapi.com/api/character/?species=${specie}`);
+    const json = await response.json();
+    const cleanJson = json.results.map((element) => {
+      return {id:element.id, name: element.name, image: element.image, species:element.species,status:element.status };
+    });
+    setAllCharacter(cleanJson);
+  };
+  getCharacterList();
+
+ }
+
   useEffect(() => {
     const getCharacterList = async () => {
-      const response = await fetch("https://rickandmortyapi.com/api/character");
+      const response = await fetch("https://rickandmortyapi.com/api/character/");
       const json = await response.json();
       const cleanJson = json.results.map((element) => {
-        return { name: element.name, image: element.image };
+        return { id:element.id,name: element.name, image: element.image, species:element.species,status:element.status };
       });
       setAllCharacter(cleanJson);
     };
     getCharacterList();
   }, []);
-  console.log(allCharacter);
   return (
     <div>
       <h1>Rick and Morty character</h1>
@@ -56,12 +68,14 @@ function App() {
       <h2>favorites character</h2>
       {listFav.map((character) => {
         return (
-          <div className="card" key={character.name}>
+          <div className="card" key={character.id}>
             <h3>{character.name}</h3>
+            <h5>Specie: {character.species}</h5>
+            <h5>Status: {character.status}</h5>
+            <img src={character.image} alt={character.name + " image"} />
             <button onClick={() => deleteFav(character)}>
               Delete from fav
             </button>
-            <img src={character.image} alt={character.name + " image"} />
           </div>
         );
       })}
@@ -69,16 +83,33 @@ function App() {
       <hr />
 
       <h2>All character</h2>
+      <label htmlFor="species">filter by: </label>
+      <select name="species"  onChange={e =>{
+        filterSearch(e.target.value)
+      }
+      } >
+      <option value=''>All</option>
+      <option value='human'>Human</option>
+      <option value='alien'>Alien</option>
+      <option value='unknown'>Unknown</option>
+      </select>
+   
+
       {allCharacter.map((character) => {
         return (
-          <div className="card" key={character.name}>
+          <div className="card" key={character.id}>
             <h3>{character.name}</h3>
-            <button onClick={() => addfav(character)}>Fav</button>
+            <h5>Specie: {character.species}</h5>
+            <h5>Status: {character.status}</h5>
             <img src={character.image} alt={character.name + " image"} />
+            <button onClick={() => addFav(character)}>Fav</button>
           </div>
         );
       })}
     </div>
+
+
+
   );
 }
 
