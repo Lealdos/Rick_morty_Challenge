@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
+  let url = new URL('https://rickandmortyapi.com/api/character/');
   const [allCharacter, setAllCharacter] = useState([]);
 
-  const [listFav, setListFav] = useState(() =>
-    JSON.parse(localStorage.getItem("rickAndMorty"))
-  );
+  const [listFav, setListFav] = useState(() => {
+    const stored = localStorage.getItem('rickAndMorty');
+    return stored ? JSON.parse(stored) : [];
+  });
 
   function addFav(character) {
     const isInFavList = (personaje) =>{ return personaje.id === character.id }
@@ -35,47 +37,33 @@ function App() {
     });
   }
 
-  const filterSearch = (specie) => {
-    const getCharacterList = async () => {
-      const response = await fetch(
-        `https://rickandmortyapi.com/api/character/?species=${specie}`
-      );
-      const json = await response.json();
-      const cleanJson = json.results.map((element) => {
-        return {
-          id: element.id,
-          name: element.name,
-          image: element.image,
-          species: element.species,
-          status: element.status,
-        };
-      });
 
-      setAllCharacter(cleanJson);
-    };
-    getCharacterList();
-  };
+  const fechingApi = async (link) =>{
+    const response = await fetch(link);
+    const json = await response.json();
+    const cleanJson = json.results.map((element) => {
+      return {
+        id: element.id,
+        name: element.name,
+        image: element.image,
+        species: element.species,
+        status: element.status,
+      };
+    });
+    return cleanJson
+  }
 
-  useEffect(() => {
-    const getCharacterList = async () => {
-      const response = await fetch(
-        "https://rickandmortyapi.com/api/character/"
-      );
-      const json = await response.json();
-      const cleanJson = json.results.map((element) => {
-        return {
-          id: element.id,
-          name: element.name,
-          image: element.image,
-          species: element.species,
-          status: element.status,
-        };
-      });
-      console.log(cleanJson);
-      setAllCharacter(cleanJson);
-    };
-    getCharacterList();
-  }, []);
+
+  const getCharacterList =  async (api) => {
+    setAllCharacter(await fechingApi(api));
+ };
+
+
+
+ useEffect(() => {
+  getCharacterList(url.href);
+}, []);
+
   return (
     <div>
       <h1>Rick and Morty character</h1>
