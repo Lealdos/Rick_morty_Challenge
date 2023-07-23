@@ -27,10 +27,11 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.cards{
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+align-items: center;
 }
 
 .card {
@@ -43,6 +44,7 @@
 
 img {
   width: fit-content;
+  border-radius: 3rem;
 }
 
 .read-the-docs {
