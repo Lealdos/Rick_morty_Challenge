@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import './App.css';
 
 function App() {
-  let url = new URL('https://rickandmortyapi.com/api/character/');
+  const API_URL ='https://rickandmortyapi.com/api/character/'
+
+
+  const [urls,setUrls] = useState(() =>{
+    const url = new URL(API_URL);
+    return url
+  })
 
   // usar un hook para la url e inicializarlo como inicialice el listFav con una funcion anonima que retorne su valor inicial y luego cambiar eso en el codigo
   const [allCharacter, setAllCharacter] = useState([]);
@@ -40,14 +46,17 @@ function App() {
     });
   }
 
-  const pagination = (data) => {
-
-
+  const pagination = () => {
+    const newUrl = new URL(urls)    
+    const currentpage = newUrl.searchParams.get('page')? Number(newUrl.searchParams.get('page')): 1
+    //inicializar
+    console.log(currentpage)
+    return  getCharacterList( modifyUrl(urls,'page',currentpage + 1));
   }
 
 
-  const fechingApi = async (link) =>{
-    const response = await fetch(link);
+  const fechingApi = async (apiLink) =>{
+    const response = await fetch(apiLink);
     const json = await response.json();
     const cleanJson = json.results.map((element) => {
       return {
@@ -61,30 +70,42 @@ function App() {
     return cleanJson
   }
 
-  const getCharacterList =  async (api) => {
-     setAllCharacter(await fechingApi(api));
+  const getCharacterList =  async (apiLink) => {
+     setAllCharacter(await fechingApi(apiLink));
   };
 
-  const filterSearch = (specie) => {
-    let params = new URLSearchParams(url.search);
-    params.set('species', specie);
+
+  const  filterSearch =  (specie) => {
     if (specie === 'all') {
-      params.delete('species');
-      return getCharacterList(url.href)
+      return getCharacterList(modifyUrl(urls,'species',specie))
     }
-    url.search = params.toString();
-    let updatedUrl = url.toString();
-    return getCharacterList(updatedUrl);
+    console.log('veamos ', modifyUrl(urls,'species',specie))
+    return  getCharacterList( modifyUrl(urls,'species',specie));
   };
+
+  const modifyUrl =  (oldUrl,prueba,valormodificado) => {
+    const newUrl = new URL(oldUrl)
+    let params = new URLSearchParams(newUrl.search);
+    params.set(prueba,valormodificado)
+    setUrls( () => {
+      let updatedUrl = '';
+      newUrl.search = params.toString()
+      updatedUrl = newUrl.toString()
+      return updatedUrl 
+    })
+
+    return new URL (urls)
+  }
+
 
   useEffect(() => {
-    getCharacterList(url.href);
-  }, []);
+    getCharacterList(urls.href);
+  }, [allCharacter]);
   
   return (
     <div>
       <h1>Rick and Morty character</h1>
-        <button onClick= {()=>pagination(url.href)}>next</button> 
+        <button onClick= {()=>pagination()}>next</button> 
         <button>prev</button> 
       <form>
         <input type="text" placeholder="serching for character" disabled />
@@ -145,3 +166,19 @@ function App() {
 }
 
 export default App;
+
+
+// const filterSearch = (specie) => {
+  //   let params = new URLSearchParams(urls.search);
+  //   let updatedUrl = '';
+  //   params.set('species', specie);
+  //   if (specie === 'all') {
+  //     params.delete('species');
+  //     urls.search = params.toString();
+  //     updatedUrl = urls.toString();
+  //     return getCharacterList(updatedUrl)
+  //   }
+  //   urls.search = params.toString();
+  //   updatedUrl = urls.toString();
+  //   return getCharacterList(updatedUrl);
+  // };
