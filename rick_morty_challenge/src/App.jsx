@@ -1,20 +1,15 @@
-import { useEffect, useState } from 'react';
-import './App.css';
+import { useEffect, useState } from "react";
+import "./App.css";
 
 function App() {
-  const API_URL ='https://rickandmortyapi.com/api/character/'
-
-
-  const [urls,setUrls] = useState(() =>{
-    const url = new URL(API_URL);
-    return url
-  })
-
-  // usar un hook para la url e inicializarlo como inicialice el listFav con una funcion anonima que retorne su valor inicial y luego cambiar eso en el codigo
+  const API_URL = "https://rickandmortyapi.com/api/character/?";
+  const url = new URL(API_URL);
+  const [prevUrl, setPreUrl] = useState(null);
+  const [nextUrl, setNextUrl] = useState(null);
   const [allCharacter, setAllCharacter] = useState([]);
 
   const [listFav, setListFav] = useState(() => {
-    const stored = localStorage.getItem('rickAndMorty');
+    const stored = localStorage.getItem("rickAndMorty");
     return stored ? JSON.parse(stored) : [];
   });
 
@@ -27,7 +22,7 @@ function App() {
     }
     setListFav((oldListFav) => {
       localStorage.setItem(
-        'rickAndMorty',
+        "rickAndMorty",
         JSON.stringify([...oldListFav, character])
       );
       return [...oldListFav, character];
@@ -37,7 +32,7 @@ function App() {
   function deleteFav(character) {
     setListFav((oldListFav) => {
       localStorage.setItem(
-        'rickAndMorty',
+        "rickAndMorty",
         JSON.stringify(
           oldListFav.filter((element) => element.name != character.name)
         )
@@ -46,19 +41,25 @@ function App() {
     });
   }
 
-  const pagination = () => {
-    const newUrl = new URL(urls)    
-    const currentpage = newUrl.searchParams.get('page')? Number(newUrl.searchParams.get('page')): 1
-    //inicializar
-    console.log(currentpage)
-    return  getCharacterList( modifyUrl(urls,'page',currentpage + 1));
-  }
+  const paginationUp = async () => {
+    return getCharacterList(nextUrl);
+  };
 
+  const paginationDown = async () => {
+    return getCharacterList(prevUrl);
+  };
 
-  const fechingApi = async (apiLink) =>{
+  const fechingApi = async (apiLink) => {
     const response = await fetch(apiLink);
     const json = await response.json();
-    const cleanJson = json.results.map((element) => {
+    setNextUrl(() => {
+      return json.info.next;
+    });
+    setPreUrl(() => {
+      return json.info.prev;
+    });
+
+    const characterInfo = json.results.map((element) => {
       return {
         id: element.id,
         name: element.name,
@@ -67,68 +68,65 @@ function App() {
         status: element.status,
       };
     });
-    return cleanJson
-  }
-
-  const getCharacterList =  async (apiLink) => {
-     setAllCharacter(await fechingApi(apiLink));
+    return characterInfo;
   };
 
+  const getCharacterList = async (apiLink) => {
+    setAllCharacter(await fechingApi(apiLink));
+  };
 
-  const  filterSearch =  (specie) => {
-    if (specie === 'all') {
-      return getCharacterList(modifyUrl(urls,'species',specie))
+  const filterSearch = (specie) => {
+    let params = new URLSearchParams(url.search);
+    let updatedUrl = "";
+    params.delete("page");
+    params.set("species", specie);
+    if (specie === "all") {
+      params.delete("species");
+      url.search = params.toString();
+      updatedUrl = url.toString();
+      return getCharacterList(updatedUrl);
     }
-    console.log('veamos ', modifyUrl(urls,'species',specie))
-    return  getCharacterList( modifyUrl(urls,'species',specie));
+    url.search = params.toString();
+    updatedUrl = url.toString();
+    return getCharacterList(updatedUrl);
   };
 
-  const modifyUrl =  (oldUrl,prueba,valormodificado) => {
-    const newUrl = new URL(oldUrl)
-    let params = new URLSearchParams(newUrl.search);
-    params.set(prueba,valormodificado)
-    setUrls( () => {
-      let updatedUrl = '';
-      newUrl.search = params.toString()
-      updatedUrl = newUrl.toString()
-      return updatedUrl 
-    })
+  const searching = (e,formsearch)=>{
+    e.preventDefault()
+    
 
-    return new URL (urls)
   }
-
-
   useEffect(() => {
-    getCharacterList(urls.href);
-  }, [allCharacter]);
-  
+    getCharacterList(url.href);
+  }, []);
+
   return (
     <div>
       <h1>Rick and Morty character</h1>
-        <button onClick= {()=>pagination()}>next</button> 
-        <button>prev</button> 
-      <form>
-        <input type="text" placeholder="serching for character" disabled />
+      <button onClick={() => paginationUp()}>next</button>
+      <button onClick={() => paginationDown()}>prev</button>
+      <form
+        onSubmit={(e)=>searching(e,e.value)}
+      >
+        <input type="text" placeholder="serching for character" />
         <button>search</button>
       </form>
 
       <h2>favorites character</h2>
-      <div className='cards'>
-      {listFav?.map((character) => {
-        return (
-          
-          <div className="card" key={character.id}>
-            <h5>Specie: {character.species}</h5>
-            <h5>Status: {character.status}</h5>
-            <img src={character.image} alt={character.name + ' image'} />
-            <h3>{character.name}</h3>
-            <button onClick={() => deleteFav(character)}>
-              Delete from fav
-            </button>
-          </div>
-        );
-      })}
-
+      <div className="cards">
+        {listFav?.map((character) => {
+          return (
+            <div className="card" key={character.id}>
+              <h5>Specie: {character.species}</h5>
+              <h5>Status: {character.status}</h5>
+              <img src={character.image} alt={character.name + " image"} />
+              <h3>{character.name}</h3>
+              <button onClick={() => deleteFav(character)}>
+                Delete from fav
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       <hr />
@@ -147,38 +145,21 @@ function App() {
         <option value="unknown">Unknown</option>
       </select>
 
-      
       <div className="cards">
-      {allCharacter.map((character) => {
-        return (
-          <div className="card" key={character.id}>
-            <h5>Specie: {character.species}</h5>
-            <h5>Status: {character.status}</h5>
-            <img src={character.image} alt={character.name + ' image'} />
-            <h3>{character.name}</h3>
-            <button onClick={() => addFav(character)}>Fav</button>
-          </div>
-        );
-      })}
+        {allCharacter.map((character) => {
+          return (
+            <div className="card" key={character.id}>
+              <h5>Specie: {character.species}</h5>
+              <h5>Status: {character.status}</h5>
+              <img src={character.image} alt={character.name + " image"} />
+              <h3>{character.name}</h3>
+              <button onClick={() => addFav(character)}>Fav</button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 export default App;
-
-
-// const filterSearch = (specie) => {
-  //   let params = new URLSearchParams(urls.search);
-  //   let updatedUrl = '';
-  //   params.set('species', specie);
-  //   if (specie === 'all') {
-  //     params.delete('species');
-  //     urls.search = params.toString();
-  //     updatedUrl = urls.toString();
-  //     return getCharacterList(updatedUrl)
-  //   }
-  //   urls.search = params.toString();
-  //   updatedUrl = urls.toString();
-  //   return getCharacterList(updatedUrl);
-  // };
