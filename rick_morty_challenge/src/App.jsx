@@ -1,9 +1,11 @@
+import { Card } from "./componets/Card";
 import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
   const API_URL = "https://rickandmortyapi.com/api/character/?";
   const url = new URL(API_URL);
+  const [listUrl, setListUrl] = useState([url]);
   const [prevUrl, setPreUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
   const [allCharacter, setAllCharacter] = useState([]);
@@ -30,6 +32,7 @@ function App() {
   }
 
   function deleteFav(character) {
+    
     setListFav((oldListFav) => {
       localStorage.setItem(
         "rickAndMorty",
@@ -40,6 +43,7 @@ function App() {
       return oldListFav.filter((element) => element.name != character.name);
     });
   }
+
 
   const paginationUp = async () => {
     return getCharacterList(nextUrl);
@@ -91,11 +95,9 @@ function App() {
     return getCharacterList(updatedUrl);
   };
 
-  const searching = (e,formsearch)=>{
-    e.preventDefault()
-    
-
-  }
+  const searching = (e, formsearch) => {
+    e.preventDefault();
+  };
   useEffect(() => {
     getCharacterList(url.href);
   }, []);
@@ -105,26 +107,16 @@ function App() {
       <h1>Rick and Morty character</h1>
       <button onClick={() => paginationUp()}>next</button>
       <button onClick={() => paginationDown()}>prev</button>
-      <form
-        onSubmit={(e)=>searching(e,e.value)}
-      >
+      <form onSubmit={(e) => searching(e, e.value)}>
         <input type="text" placeholder="serching for character" />
         <button>search</button>
       </form>
 
       <h2>favorites character</h2>
-      <div className="cards">
+      <div className="cards_list">
         {listFav?.map((character) => {
           return (
-            <div className="card" key={character.id}>
-              <h5>Specie: {character.species}</h5>
-              <h5>Status: {character.status}</h5>
-              <img src={character.image} alt={character.name + " image"} />
-              <h3>{character.name}</h3>
-              <button onClick={() => deleteFav(character)}>
-                Delete from fav
-              </button>
-            </div>
+            <Card key={character.id} specie={character.specie} status={character.status} name={character.name} image={character.image} fun={deleteFav(character)} namefuntion='delete'></Card>
           );
         })}
       </div>
@@ -145,16 +137,10 @@ function App() {
         <option value="unknown">Unknown</option>
       </select>
 
-      <div className="cards">
+      <div className="cards_list">
         {allCharacter.map((character) => {
           return (
-            <div className="card" key={character.id}>
-              <h5>Specie: {character.species}</h5>
-              <h5>Status: {character.status}</h5>
-              <img src={character.image} alt={character.name + " image"} />
-              <h3>{character.name}</h3>
-              <button onClick={() => addFav(character)}>Fav</button>
-            </div>
+            <Card key={character.id} specie={character.specie} status={character.status} name={character.name} image={character.image} fun={onclick=()=>{addFav(character) }} namefuntion='add' ></Card>
           );
         })}
       </div>
