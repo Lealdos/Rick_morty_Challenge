@@ -16,8 +16,8 @@ function App() {
   });
 
   function addFav(character) {
-    const isInFavList = (personaje) => {
-      return personaje.id === character.id;
+    const isInFavList = (card) => {
+      return card.id === character.id;
     };
     if (listFav?.some(isInFavList)) {
       return;
@@ -116,7 +116,7 @@ function App() {
       <div className="cards_list">
         {listFav?.map((character) => {
           return (
-            <Card key={character.id} specie={character.specie} status={character.status} name={character.name} image={character.image} fun={deleteFav(character)} namefuntion='delete'></Card>
+            <Card key={character.id} specie={character.specie} status={character.status} name={character.name} image={character.image} fun={()=>deleteFav(character)} namefuntion='delete'></Card>
           );
         })}
       </div>
@@ -140,7 +140,7 @@ function App() {
       <div className="cards_list">
         {allCharacter.map((character) => {
           return (
-            <Card key={character.id} specie={character.specie} status={character.status} name={character.name} image={character.image} fun={onclick=()=>{addFav(character) }} namefuntion='add' ></Card>
+            <Card key={character.id} specie={character.specie} status={character.status} name={character.name} image={character.image} fun={()=>addFav(character)} namefuntion='add' ></Card>
           );
         })}
       </div>
