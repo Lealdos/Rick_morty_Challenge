@@ -3,6 +3,11 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  
+}
+
+.main{
+padding: 4em;
 }
 
 .cards_list {
@@ -11,6 +16,10 @@
   justify-content: center;
   align-items: center;
   gap: 2em;
+}
+
+.cards_list_fav {
+  margin-bottom: 2em;
 }
 
 .card {

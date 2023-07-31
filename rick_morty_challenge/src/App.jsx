@@ -32,7 +32,6 @@ function App() {
   }
 
   function deleteFav(character) {
-    
     setListFav((oldListFav) => {
       localStorage.setItem(
         "rickAndMorty",
@@ -43,7 +42,6 @@ function App() {
       return oldListFav.filter((element) => element.name != character.name);
     });
   }
-
 
   const paginationUp = async () => {
     return getCharacterList(nextUrl);
@@ -103,7 +101,7 @@ function App() {
   }, []);
 
   return (
-    <div>
+    <div className="main">
       <h1>Rick and Morty character</h1>
       <button onClick={() => paginationUp()}>next</button>
       <button onClick={() => paginationDown()}>prev</button>
@@ -113,10 +111,18 @@ function App() {
       </form>
 
       <h2>favorites character</h2>
-      <div className="cards_list">
+      <div className="cards_list_fav">
         {listFav?.map((character) => {
           return (
-            <Card key={character.id} specie={character.specie} status={character.status} name={character.name} image={character.image} fun={()=>deleteFav(character)} namefuntion='delete'></Card>
+            <Card
+              key={character.id}
+              specie={character.species}
+              status={character.status}
+              name={character.name}
+              image={character.image}
+              fun={() => deleteFav(character)}
+              namefuntion="delete"
+            ></Card>
           );
         })}
       </div>
@@ -140,7 +146,15 @@ function App() {
       <div className="cards_list">
         {allCharacter.map((character) => {
           return (
-            <Card key={character.id} specie={character.specie} status={character.status} name={character.name} image={character.image} fun={()=>addFav(character)} namefuntion='add' ></Card>
+            <Card
+              key={character.id}
+              specie={character.species}
+              status={character.status}
+              name={character.name}
+              image={character.image}
+              fun={() => addFav(character)}
+              namefuntion="add"
+            ></Card>
           );
         })}
       </div>
