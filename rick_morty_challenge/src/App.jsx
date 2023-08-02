@@ -1,17 +1,19 @@
 import { Card } from "./componets/Card";
-import { useEffect, useState } from "react";
+import debounce from "just-debounce-it" 
+import { useEffect, useState,useCallback } from "react";
 import "./App.css";
 
 function App() {
-  const API_URL = "https://rickandmortyapi.com/api/character/?";
+  const API_URL = 'https://rickandmortyapi.com/api/character/';
   const url = new URL(API_URL);
-  const [listUrl, setListUrl] = useState([url]);
+  const [listUrl, setListUrl] = useState(url);
   const [prevUrl, setPreUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
   const [allCharacter, setAllCharacter] = useState([]);
+  const WAITSEARCH = 800
 
   const [listFav, setListFav] = useState(() => {
-    const stored = localStorage.getItem("rickAndMorty");
+    const stored = localStorage.getItem('rickAndMorty');
     return stored ? JSON.parse(stored) : [];
   });
 
@@ -24,7 +26,7 @@ function App() {
     }
     setListFav((oldListFav) => {
       localStorage.setItem(
-        "rickAndMorty",
+        'rickAndMorty',
         JSON.stringify([...oldListFav, character])
       );
       return [...oldListFav, character];
@@ -34,7 +36,7 @@ function App() {
   function deleteFav(character) {
     setListFav((oldListFav) => {
       localStorage.setItem(
-        "rickAndMorty",
+        'rickAndMorty',
         JSON.stringify(
           oldListFav.filter((element) => element.name != character.name)
         )
@@ -55,10 +57,10 @@ function App() {
     const response = await fetch(apiLink);
     const json = await response.json();
     setNextUrl(() => {
-      return json.info.next;
+      return json.info.next ? json.info.next : null;
     });
     setPreUrl(() => {
-      return json.info.prev;
+      return json.info.prev ? json.info.prev : null;
     });
 
     const characterInfo = json.results.map((element) => {
@@ -77,39 +79,64 @@ function App() {
     setAllCharacter(await fechingApi(apiLink));
   };
 
-  const filterSearch = (specie) => {
-    let params = new URLSearchParams(url.search);
-    let updatedUrl = "";
-    params.delete("page");
-    params.set("species", specie);
-    if (specie === "all") {
-      params.delete("species");
-      url.search = params.toString();
-      updatedUrl = url.toString();
-      return getCharacterList(updatedUrl);
-    }
-    url.search = params.toString();
-    updatedUrl = url.toString();
-    return getCharacterList(updatedUrl);
+  const filterBySearch = (specie) => {
+    setListUrl(() => {
+      return modifyUrl('species', specie, 'all');
+    });
+    return getCharacterList(listUrl);
   };
 
-  const searching = (e, formsearch) => {
-    e.preventDefault();
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    // Read the form data
+    const form = event.target;
+    const formData = new FormData(form);
+
+    const formJson = Object.fromEntries(formData.entries());
+    const search = formJson.searchbyname;
+    setListUrl(() => {
+      return modifyUrl('name', search, '');
+    });
+    return getCharacterList(listUrl);
   };
+
+  const modifyUrl = (searchParam, newValue, valueToCheck) => {
+    let params = new URLSearchParams(listUrl.search);
+    let updatedUrl = '';
+    if (newValue === valueToCheck) {
+      params.delete(searchParam);
+      listUrl.search = params.toString();
+      updatedUrl = listUrl.toString();
+      return new URL(updatedUrl);
+    }
+    params.delete(searchParam);
+    params.set(searchParam, newValue);
+    listUrl.search = params.toString();
+    updatedUrl = listUrl.toString();
+    return new URL(updatedUrl);
+  };
+
+  const handleChange = (event) =>{
+    const newSearch = event.target.value
+    debounceGetCharacter(modifyUrl('name',newSearch,''))
+
+
+  }
+
+  const debounceGetCharacter = useCallback( debounce(searching => {
+    getCharacterList(searching)
+  }, WAITSEARCH),[]
+  )
+
+
   useEffect(() => {
-    getCharacterList(url.href);
-  }, []);
+    getCharacterList(listUrl.href);
+  }, [listUrl]);
 
   return (
     <div className="main">
       <h1>Rick and Morty character</h1>
-      <button onClick={() => paginationUp()}>next</button>
-      <button onClick={() => paginationDown()}>prev</button>
-      <form onSubmit={(e) => searching(e, e.value)}>
-        <input type="text" placeholder="serching for character" />
-        <button>search</button>
-      </form>
-
       <h2>favorites character</h2>
       <div className="cards_list_fav">
         {listFav?.map((character) => {
@@ -130,16 +157,31 @@ function App() {
       <hr />
 
       <h2>All character</h2>
-      <label htmlFor="species">filter by: </label>
+
+      <button onClick={paginationUp}>next</button>
+      <button onClick={paginationDown}>prev</button>
+      <form onSubmit={handleSubmit}>
+        <input onChange={handleChange}
+          type="text"
+          name="searchbyname"
+          placeholder="serching for character"
+        />
+        <button>search</button>
+      </form>
+
+      <label htmlFor="search">filter by: </label>
       <select
         name="species"
         onChange={(e) => {
-          filterSearch(e.target.value);
+          filterBySearch(e.target.value);
         }}
       >
-        <option value="all">All</option>
+        <option defaultValue value="all">
+          All
+        </option>
         <option value="human">Human</option>
         <option value="alien">Alien</option>
+        <option value="animal">animal</option>
         <option value="unknown">Unknown</option>
       </select>
 

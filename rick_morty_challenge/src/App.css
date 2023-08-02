@@ -18,8 +18,13 @@ padding: 4em;
   gap: 2em;
 }
 
-.cards_list_fav {
+.cards_list_fav, .cards_lis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  justify-items: center;
   margin-bottom: 2em;
+
 }
 
 .card {
