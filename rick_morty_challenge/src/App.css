@@ -3,11 +3,10 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-  
 }
 
-.main{
-padding: 4em;
+.main {
+  padding: 4em;
 }
 
 .cards_list {
@@ -18,26 +17,21 @@ padding: 4em;
   gap: 2em;
 }
 
-.cards_list_fav, .cards_lis {
+.cards_list_fav,
+.cards_lis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2rem;
   justify-items: center;
   margin-bottom: 2em;
-
 }
 
-.card {
-  padding: 0 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-}
+
 
 img {
-  width: fit-content;
-  border-radius: 3rem;
+  border-radius: 1rem;
+  width: 100%;
+  object-fit: contain;
 }
 
 .read-the-docs {
