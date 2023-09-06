@@ -1,2 +1,2 @@
 export * from './useCharacters';
-export * from "./useFavoriteChraracters";
+export * from "./useFavoriteCharacters";

@@ -4,30 +4,32 @@ import styles from "./index.module.css";
 
 const noOp = () => null;
 
-
-const filterBySearch = (specie) => {
-  
-
-};
-
 export function SearchFilters(searching) {
-
-
   
-    const {handleSearch = noOp} = searching 
-    const handleFormSubmit = (event) => {
+  const { handleSearch = noOp } = searching;
+  const { handleFilterSearch = noOp } = searching;
+  const handleFormSubmit = (event) => {
     event.preventDefault();
-
     const formData = new FormData(event.currentTarget);
     const formValues = Object.fromEntries(formData.entries());
 
     handleSearch(formValues);
   };
 
+    //reparar esta funcion 
+  const filterBySearch = (event) => {
+    const filterData = new Object(event.currentTarget);
+    console.log('leo ',filterData)
+  };
+
   return (
-    <form className={styles.form} onSubmit={handleFormSubmit} autoComplete="off">
+    <form
+      className={styles.form}
+      onSubmit={handleFormSubmit}
+      autoComplete="off"
+    >
       <input name="name" type="search" placeholder="search by name..." />
-      <select name="status" onChange={(e)=>{filterBySearch(e.target.value)}}>
+      <select name="status" onChange={filterBySearch}>
         <option value="">Select an option</option>
         {CHARACTER_STATUSES.map((status) => (
           <option key={status} value={status}>
